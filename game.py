@@ -1,12 +1,12 @@
 import pygame
 import random
-from threading import Thread, Event
+from threading import Thread, Event, BoundedSemaphore
 from colors import *
 from agent import Agent
 
 BACKGROUND = MARTE
-GAME_MATRIX_SIZE = 50
-AGENT_NUMBER = 10
+GAME_MATRIX_SIZE = 25
+AGENT_NUMBER = 1
 
 class Game(object):
 
@@ -22,6 +22,7 @@ class Game(object):
 
         self.mothership_position = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
         self.game_map = [[None for i in range(GAME_MATRIX_SIZE)] for i in range(GAME_MATRIX_SIZE)]
+        self.map_sem = BoundedSemaphore()
 
         self.game_map[self.mothership_position[0]][self.mothership_position[1]] = MAGENTA
 
@@ -76,10 +77,12 @@ class Game(object):
                     self.agents.append(Agent((x, y), self))
 
     def clear_position(self, x, y):
-        self.game_map[x][y] = None
+        with self.map_sem:
+            self.game_map[x][y] = None
 
     def set_postion(self, color, x, y):
-        self.game_map[x][y] = color        
+        with self.map_sem:
+            self.game_map[x][y] = color        
 
 
 if __name__ == "__main__":
@@ -93,15 +96,16 @@ if __name__ == "__main__":
 
     while not game.done:
         game.event.clear()
-        clock.tick(7)     
+        clock.tick(7)       
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 game.done = True
 
-        game.screen.fill(BACKGROUND)
-        for x in range(GAME_MATRIX_SIZE):
-            for y in range(GAME_MATRIX_SIZE):
-                if not game.game_map[x][y] is None:
-                    pygame.draw.rect(game.screen, game.game_map[x][y], [x*16, y*16, 16, 16])
-        pygame.display.flip()
+        with game.map_sem:
+            game.screen.fill(BACKGROUND)
+            for x in range(GAME_MATRIX_SIZE):
+                for y in range(GAME_MATRIX_SIZE):
+                    if not game.game_map[x][y] is None:
+                        pygame.draw.rect(game.screen, game.game_map[x][y], [x*16, y*16, 16, 16])
+            pygame.display.flip()
         game.event.set()
