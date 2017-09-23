@@ -6,7 +6,7 @@ from agent import Agent
 
 BACKGROUND = MARTE
 GAME_MATRIX_SIZE = 50
-AGENT_NUMBER = 20
+AGENT_NUMBER = 10
 
 class Game(object):
 
@@ -93,7 +93,7 @@ if __name__ == "__main__":
 
     while not game.done:
         game.event.clear()
-        clock.tick(10)     
+        clock.tick(7)     
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 game.done = True

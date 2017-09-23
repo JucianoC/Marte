@@ -4,13 +4,18 @@ BLUE =  (  0,   0, 255)
 GREEN = (  0, 255,   0)
 RED =   (255,   0,   0)
 MARTE = (244, 128, 66)
-ROCK = (53, 32, 19)
+ROCK = (165, 97, 29)
 METAL = (86, 83, 81)
 ESMERALDA = (24, 127, 55)
 RUBY = (186, 22, 22)
 SAFIRA = (21, 9, 122)
 MAGENTA = (255,0,255)
+CYAN = (0, 255, 255)
 
 GEMS = [
     RUBY, ESMERALDA, SAFIRA
+]
+
+AGENT_COLORS = [
+    WHITE, METAL
 ]
