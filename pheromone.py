@@ -1,10 +1,10 @@
 import time
-from threading import BoundedSemaphore, Thread
+from threading import BoundedSemaphore
 from colors import *
-from game import GAME_MATRIX_SIZE
+from game_config import *
 
 class Pheromone(object):
-    def __init__(self, game, life_time=10):
+    def __init__(self, game, life_time=PHEROMONE_LIFE):
         self.matrix = [[0 for i in range(GAME_MATRIX_SIZE)] for i in range(GAME_MATRIX_SIZE)]
         self.matrix_sem = BoundedSemaphore()
         self.game = game
@@ -23,16 +23,7 @@ class Pheromone(object):
                     else:
                         self.matrix[x][y] -= 1
 
-                    if not self.game.game_map[x][y] in AGENT_COLORS:
-                        if self.matrix[x][y] == 0:
-                            self.game.clear_position(x, y)
-                        else
-                            self.game.set_postion(CYAN, x, y)
-
-    def loop(self):
-        while True:
-            time.sleep(1)
-            self.update()
-
-    def start(self):
-        Thread(target=loop).start()
+                    if self.matrix[x][y] == 0:
+                        self.game.clear_position(x, y)
+                    else:
+                        self.game.set_postion(CYAN, x, y)

@@ -1,6 +1,7 @@
 import random
 import time
 from colors import *
+from game_config import *
 from pheromone import Pheromone
 
 class AgentTraped(Exception):
@@ -13,7 +14,6 @@ class Agent(object):
         self.game = game
         self.full = False
         self.color = WHITE
-        self.chaos_chance = 0.01
 
     def togle_status(self):
         self.full = not self.full
@@ -60,13 +60,13 @@ class Agent(object):
         
         if target is None:
             chaos = random.random()
-            if (not pheromone_range) or (chaos <= 0.3 and empty_range):
+            if (not pheromone_range) or (chaos <= AGENT_DEFAULT and empty_range):
                 self.move_to(random.choice(empty_range))
             else:
                 self.move_to(random.choice(pheromone_range))
         else:
             chaos = random.random()
-            if chaos <= self.chaos_chance:
+            if chaos <= AGENT_MSHIP:
                 self.move_default(my_range)
             else:
                 possibilities = empty_range + pheromone_range
