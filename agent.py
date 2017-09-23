@@ -42,7 +42,7 @@ class Agent(object):
             self.mship_search(my_range)
 
     def move_to(self, destine):
-        Pheromone(self.position, self.game).start()
+        self.game.pheromone_controller.add(self.position)
         self.position = destine
         self.game.set_postion(self.color, *self.position)
 
@@ -117,4 +117,4 @@ class Agent(object):
         ]
 
         for value in range_explosion:
-            Pheromone(value, self.game).start()
+            self.game.pheromone_controller.add(value)

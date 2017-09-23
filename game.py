@@ -3,6 +3,7 @@ import random
 from threading import Thread, Event, BoundedSemaphore
 from colors import *
 from agent import Agent
+from pheromone import Pheromone
 
 BACKGROUND = MARTE
 GAME_MATRIX_SIZE = 25
@@ -19,6 +20,7 @@ class Game(object):
         self.done = False
         self.agents = []
         self.event = Event()
+        self.pheromone_controller = None
 
         self.mothership_position = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
         self.game_map = [[None for i in range(GAME_MATRIX_SIZE)] for i in range(GAME_MATRIX_SIZE)]
@@ -76,6 +78,19 @@ class Game(object):
                 if self.game_map[x][y] == WHITE:
                     self.agents.append(Agent((x, y), self))
 
+    def start_pheromone_controller(self):
+        self.pheromone_controller = Pheromone(self)
+        self.pheromone_controller.start()
+
+    def update(self):
+        with self.map_sem:
+            self.screen.fill(BACKGROUND)
+            for x in range(GAME_MATRIX_SIZE):
+                for y in range(GAME_MATRIX_SIZE):
+                    if not self.game_map[x][y] is None:
+                        pygame.draw.rect(game.screen, self.game_map[x][y], [x*16, y*16, 16, 16])
+            pygame.display.flip()
+
     def clear_position(self, x, y):
         with self.map_sem:
             self.game_map[x][y] = None
@@ -101,11 +116,5 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT: 
                 game.done = True
 
-        with game.map_sem:
-            game.screen.fill(BACKGROUND)
-            for x in range(GAME_MATRIX_SIZE):
-                for y in range(GAME_MATRIX_SIZE):
-                    if not game.game_map[x][y] is None:
-                        pygame.draw.rect(game.screen, game.game_map[x][y], [x*16, y*16, 16, 16])
-            pygame.display.flip()
+            game.update()
         game.event.set()
