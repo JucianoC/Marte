@@ -5,16 +5,17 @@ from colors import *
 from agent import Agent
 
 BACKGROUND = MARTE
-GAME_MATRIX_SIZE = 25
-AGENT_NUMBER = 1
+GAME_MATRIX_SIZE = 50
+AGENT_NUMBER = 20
 
 class Game(object):
 
-    def __init__(self):
+    def __init__(self, clock):
         pygame.init()
         pygame.display.set_caption("Marte")
         self.screen = pygame.display.set_mode((16*GAME_MATRIX_SIZE, 16*GAME_MATRIX_SIZE))
         self.screen.fill(BACKGROUND)
+        self.clock = clock
         self.done = False
         self.agents = []
         self.event = Event()
@@ -40,7 +41,7 @@ class Game(object):
             Game.get_range(
                 self.mothership_position[0],
                 self.mothership_position[1],
-                2
+                distance=AGENT_NUMBER, tower_mode=False
             ) if not value is None
         ]
 
@@ -51,11 +52,13 @@ class Game(object):
                 mship_range.remove(pos)
 
     @classmethod
-    def get_range(self, base_x, base_y, distance=1):
+    def get_range(self, base_x, base_y, distance=1, tower_mode=True):
         map_range = []
         for x in range(-distance, distance+1):
             for y in range(-2, 3):
                 if x == 0 and y == 0: 
+                    continue
+                if tower_mode and (x != 0 and y != 0):
                     continue
                 pos_x = base_x + x
                 pos_y = base_y + y
@@ -80,27 +83,25 @@ class Game(object):
 
 
 if __name__ == "__main__":
-    game = Game()
+    clock = pygame.time.Clock()
+    game = Game(clock)
     game.create_agents()
 
     for agent in game.agents:
         t = Thread(target=agent.life)
         t.start()
 
-    clock = pygame.time.Clock()
     while not game.done:
+        game.event.clear()
         clock.tick(10)     
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 game.done = True
 
-        game.event.clear()
         game.screen.fill(BACKGROUND)
         for x in range(GAME_MATRIX_SIZE):
             for y in range(GAME_MATRIX_SIZE):
-                if game.game_map[x][y] is None:
-                    pygame.draw.rect(game.screen, BACKGROUND, [x*16, y*16, 16, 16])
-                else:
+                if not game.game_map[x][y] is None:
                     pygame.draw.rect(game.screen, game.game_map[x][y], [x*16, y*16, 16, 16])
         pygame.display.flip()
         game.event.set()
