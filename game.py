@@ -1,9 +1,12 @@
 import pygame
 import random
+from threading import Thread, Event
 from colors import *
+from agent import Agent
 
 BACKGROUND = MARTE
 GAME_MATRIX_SIZE = 25
+AGENT_NUMBER = 1
 
 class Game(object):
 
@@ -13,10 +16,13 @@ class Game(object):
         self.screen = pygame.display.set_mode((16*GAME_MATRIX_SIZE, 16*GAME_MATRIX_SIZE))
         self.screen.fill(BACKGROUND)
         self.done = False
+        self.agents = []
+        self.event = Event()
+
         self.mothership_position = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
         self.game_map = [[None for i in range(GAME_MATRIX_SIZE)] for i in range(GAME_MATRIX_SIZE)]
 
-        self.game_map[self.mothership_position[0]][self.mothership_position[1]] = WHITE
+        self.game_map[self.mothership_position[0]][self.mothership_position[1]] = MAGENTA
 
         for i in range(int(0.1*GAME_MATRIX_SIZE*GAME_MATRIX_SIZE)):
             pos_gema = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
@@ -29,6 +35,42 @@ class Game(object):
             if self.game_map[pos_rock[0]][pos_rock[1]] is None:
                 self.game_map[pos_rock[0]][pos_rock[1]] = ROCK
 
+        mship_range = [
+            value for value in 
+            Game.get_range(
+                self.mothership_position[0],
+                self.mothership_position[1],
+                2
+            ) if not value is None
+        ]
+
+        for i in range(AGENT_NUMBER):
+            if mship_range:
+                pos = random.choice(mship_range)
+                self.game_map[pos[0]][pos[1]] = WHITE
+                mship_range.remove(pos)
+
+    @classmethod
+    def get_range(self, base_x, base_y, distance=1):
+        map_range = []
+        for x in range(-distance, distance+1):
+            for y in range(-2, 3):
+                if x == 0 and y == 0: 
+                    continue
+                pos_x = base_x + x
+                pos_y = base_y + y
+                if pos_x >= GAME_MATRIX_SIZE or pos_x < 0:
+                    continue
+                if pos_y >= GAME_MATRIX_SIZE or pos_y < 0:
+                    continue
+                map_range.append((pos_x, pos_y))
+        return map_range
+
+    def create_agents(self):
+        for x in range(GAME_MATRIX_SIZE):
+            for y in range(GAME_MATRIX_SIZE):
+                if self.game_map[x][y] == WHITE:
+                    self.agents.append(Agent((x, y), self))
 
     def clear_position(self, x, y):
         self.game_map[x][y] = None
@@ -36,22 +78,29 @@ class Game(object):
     def set_postion(self, color, x, y):
         self.game_map[x][y] = color        
 
-    def refresh(self):
-        self.screen.fill(BACKGROUND)
-        for x in range(GAME_MATRIX_SIZE):
-            for y in range(GAME_MATRIX_SIZE):
-                if not self.game_map[x][y] == None:
-                    pygame.draw.rect(self.screen, self.game_map[x][y], [x*16, y*16, 16, 16])
-        pygame.display.flip()
 
 if __name__ == "__main__":
     game = Game()
-    clock = pygame.time.Clock()
+    game.create_agents()
 
-    while not game.done: 
+    for agent in game.agents:
+        t = Thread(target=agent.life)
+        t.start()
+
+    clock = pygame.time.Clock()
+    while not game.done:
         clock.tick(10)     
         for event in pygame.event.get():
             if event.type == pygame.QUIT: 
                 game.done = True
 
-        game.refresh()
+        game.event.clear()
+        game.screen.fill(BACKGROUND)
+        for x in range(GAME_MATRIX_SIZE):
+            for y in range(GAME_MATRIX_SIZE):
+                if game.game_map[x][y] is None:
+                    pygame.draw.rect(game.screen, BACKGROUND, [x*16, y*16, 16, 16])
+                else:
+                    pygame.draw.rect(game.screen, game.game_map[x][y], [x*16, y*16, 16, 16])
+        pygame.display.flip()
+        game.event.set()
