@@ -112,7 +112,7 @@ class Agent(object):
         range_explosion = [
             value for value in 
             self.game.get_range(
-                self.position[0], self.position[1], distance=4, tower_mode=False
+                self.position[0], self.position[1], distance=AGENT_PHEROMONE_EXPLOSION, tower_mode=False
             ) if self.game.game_map[value[0]][value[1]] in (None, CYAN)
         ]
 
