@@ -42,7 +42,12 @@ class Agent(object):
             self.mship_search(my_range)
 
     def move_to(self, destine):
-        self.game.pheromone_controller.add(self.position)
+        if PHEROMONE_PATH:
+            self.game.pheromone_controller.add(self.position)
+        else:
+            fill = None if self.game.pheromone_controller.get(self.position) == 0 else CYAN
+            self.game.game_map[self.position[0]][self.position[1]] = fill
+
         self.position = destine
         self.game.set_postion(self.color, *self.position)
 
@@ -58,16 +63,22 @@ class Agent(object):
         if not empty_range and not pheromone_range:
             raise AgentTraped
         
-        if target is None:
+        if not self.full:
             chaos = random.random()
-            if (not pheromone_range) or (chaos <= AGENT_DEFAULT and empty_range):
-                self.move_to(random.choice(empty_range))
+            if (not pheromone_range) or (chaos <= AGENT_RANDOM and empty_range):
+                if random.random() < AGENT_DEFAULT_MAX_DISTANCE:
+                    self.move_to(empty_range[self.get_max_dist_index(empty_range, target)])
+                else:
+                    self.move_to(random.choice(empty_range))
             else:
-                self.move_to(random.choice(pheromone_range))
+                if random.random() < AGENT_DEFAULT_MAX_DISTANCE:
+                    self.move_to(pheromone_range[self.get_max_dist_index(pheromone_range, target)])
+                else:
+                    self.move_to(random.choice(pheromone_range))
         else:
             chaos = random.random()
             if chaos <= AGENT_MSHIP:
-                self.move_default(my_range)
+                self.move_default(my_range, target)
             else:
                 possibilities = empty_range + pheromone_range
                 self.move_to(
@@ -87,7 +98,7 @@ class Agent(object):
             self.move_to(random.choice(gem_range))
             self.togle_status()        
         else:
-            self.move_default(my_range)
+            self.move_default(my_range, self.game.mothership_position)
 
     def mship_search(self, my_range):
         mship_range = [
@@ -107,6 +118,12 @@ class Agent(object):
             self.distance(value, target) for value in avaliable_list
         ]
         return dist_list.index(min(dist_list))
+
+    def get_max_dist_index(self, avaliable_list, target):
+        dist_list = [
+            self.distance(value, target) for value in avaliable_list
+        ]
+        return dist_list.index(max(dist_list))
 
     def explode_pheromone(self):
         range_explosion = [

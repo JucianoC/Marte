@@ -20,11 +20,9 @@ class Game(object):
         self.event = Event()
         self.pheromone_controller = None
 
-        self.mothership_position = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
         self.game_map = [[None for i in range(GAME_MATRIX_SIZE)] for i in range(GAME_MATRIX_SIZE)]
         self.map_sem = BoundedSemaphore()
 
-        self.game_map[self.mothership_position[0]][self.mothership_position[1]] = MAGENTA
 
         for i in range(int(FILL_MATRIX_ROCKS*GAME_MATRIX_SIZE*GAME_MATRIX_SIZE)):
             pos_rock = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
@@ -51,6 +49,13 @@ class Game(object):
                 empty_slots.remove(gem_position)
                 gem_range.remove(gem_position)
                 self.game_map[gem_position[0]][gem_position[1]] = random.choice(GEMS)
+
+
+        self.mothership_position = random.choice(list(empty_slots))
+        self.game_map[self.mothership_position[0]][self.mothership_position[1]] = MAGENTA
+
+        for value in Game.get_range(self.mothership_position[0], self.mothership_position[1], 3, False):
+            self.game_map[value[0]][value[1]] = None
 
         mship_range = [
             value for value in 
