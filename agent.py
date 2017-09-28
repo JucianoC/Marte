@@ -117,4 +117,4 @@ class Agent(object):
         ]
 
         for value in range_explosion:
-            self.game.pheromone_controller.add(value)
+            self.game.pheromone_controller.add(value, AGENT_PHEROMENE_EXPLOSION_LIFE)

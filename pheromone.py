@@ -10,9 +10,10 @@ class Pheromone(object):
         self.game = game
         self.life_time = life_time
 
-    def add(self, position):
+    def add(self, position, life_time=None):
+        accress_time = self.life_time if life_time is None else life_time
         with self.matrix_sem:
-            self.matrix[position[0]][position[1]] += self.life_time
+            self.matrix[position[0]][position[1]] += accress_time
 
     def update(self):
         for x in range(GAME_MATRIX_SIZE):

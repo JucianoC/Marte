@@ -26,16 +26,31 @@ class Game(object):
 
         self.game_map[self.mothership_position[0]][self.mothership_position[1]] = MAGENTA
 
-        for i in range(int(FILL_MATRIX*GAME_MATRIX_SIZE*GAME_MATRIX_SIZE)):
-            pos_gema = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
+        for i in range(int(FILL_MATRIX_ROCKS*GAME_MATRIX_SIZE*GAME_MATRIX_SIZE)):
             pos_rock = (random.randint(0, GAME_MATRIX_SIZE-1), random.randint(0, GAME_MATRIX_SIZE-1))
-            
-            if self.game_map[pos_gema[0]][pos_gema[1]] is None:
-                gem = random.choice(GEMS)
-                self.game_map[pos_gema[0]][pos_gema[1]] = gem
             
             if self.game_map[pos_rock[0]][pos_rock[1]] is None:
                 self.game_map[pos_rock[0]][pos_rock[1]] = ROCK
+
+        empty_slots = set()
+        for x in range(GAME_MATRIX_SIZE):
+            for y in range(GAME_MATRIX_SIZE):
+                if self.game_map[x][y] is None:
+                    empty_slots.add((x, y))
+
+        for i in range(GEM_CENTERS):
+            gem_center = random.choice(list(empty_slots))
+            gem_range = [
+                value for value in 
+                Game.get_range(gem_center[0], gem_center[1], distance=GEM_RANGE, tower_mode=False)
+                if self.game_map[value[0]][value[1]] is None
+            ]
+            for j in range(int(len(gem_range) * GEM_FILL)):
+                if not empty_slots: break
+                gem_position = random.choice(gem_range)
+                empty_slots.remove(gem_position)
+                gem_range.remove(gem_position)
+                self.game_map[gem_position[0]][gem_position[1]] = random.choice(GEMS)
 
         mship_range = [
             value for value in 
