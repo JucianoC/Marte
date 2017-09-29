@@ -43,6 +43,7 @@ class Game(object):
                 Game.get_range(gem_center[0], gem_center[1], distance=GEM_RANGE, tower_mode=False)
                 if self.game_map[value[0]][value[1]] is None
             ]
+            gem_range.append(gem_center)
             for j in range(int(len(gem_range) * GEM_FILL)):
                 if not empty_slots: break
                 gem_position = random.choice(gem_range)
@@ -63,7 +64,7 @@ class Game(object):
                 self.mothership_position[0],
                 self.mothership_position[1],
                 distance=AGENT_NUMBER, tower_mode=False
-            ) if not value is None
+            ) if self.game_map[value[0]][value[1]] is None
         ]
 
         for i in range(AGENT_NUMBER):
